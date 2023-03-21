@@ -1,0 +1,31 @@
+name: CRD Ubuntu
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install dependencies and CRD
+      run: |
+        sudo apt update
+        sudo apt install -y curl wget gdebi-desktop
+        wget https://dl.google.com/linux/direct/chrome-remote-desktop_current_amd64.deb
+        sudo gdebi --non-interactive chrome-remote-desktop_current_amd64.deb
+    - name: Enable and start CRD service
+      run: |
+        sudo systemctl enable chrome-remote-desktop.service
+        sudo systemctl start chrome-remote-desktop.service
+    - name: Set up firewall
+      run: |
+        sudo ufw allow 22/tcp
+        sudo ufw allow 3389/tcp
+        sudo ufw reload
+    - name: Commit and push to GitHub
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: "Add CRD configuration"
+        branch: main
